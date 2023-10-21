@@ -1,2 +1,0 @@
-# MHS
-Monthly Highlight Statistics
