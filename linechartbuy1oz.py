@@ -47,6 +47,6 @@ for year, month_data in data_by_year_month.items():
 # Set labels and title
 plt.xlabel('Month')
 plt.ylabel('Price')
-plt.title('Gold Price Trends (Differentiated by Year and Month)')
+plt.title('Buying Gold Price Trends by Year for 1 oz')
 plt.legend()
 plt.show()
