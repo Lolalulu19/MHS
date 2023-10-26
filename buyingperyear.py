@@ -3,7 +3,7 @@ import datetime
 import matplotlib.pyplot as plt
 
 # Open the CSV file
-with open('C:\\Users\\pc\\Downloads\\kijang-emas-year.csv', 'r') as file:
+with open('C:\\Users\\pc\\Downloads\\kijang-emas-year BUYING.csv', 'r') as file:
     # Create a CSV reader object
     csv_reader = csv.DictReader(file)
     
