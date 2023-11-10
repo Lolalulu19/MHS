@@ -1,13 +1,9 @@
 import requests
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')  # Set the backend to Agg
-import matplotlib.pyplot as plt
-import base64
-from io import BytesIO
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
+import plotly.graph_objs as go
 
 # Define the header parameters
 headers = {
@@ -47,40 +43,30 @@ if response.status_code == 200:
             value='bar',
             clearable=False
         ),
-        html.Div(id='chart-container')
+        dcc.Graph(id='chart-container')  # Use dcc.Graph for plotting
     ])
 
     # Define callback to update chart based on dropdown selection
     @app.callback(
-        Output('chart-container', 'children'),
+        Output('chart-container', 'figure'),  # Output should be 'figure'
         [Input('chart-type', 'value')]
     )
     def update_chart(selected_chart):
         if selected_chart == 'bar':
-            x = range(len(quantities))
-            plt.figure(figsize=(8, 6))
-            plt.bar(x, df['Buying Price'], label='Buying Price', color='b')
-            plt.bar(x, df['Selling Price'], label='Selling Price', color='g', bottom=df['Buying Price'])
-            plt.xlabel('Quantities')
-            plt.ylabel('Prices')
-            plt.title('Stacked Bar Chart')
-            plt.xticks(x, quantities)
-            plt.legend()
-            plt.tight_layout()
+            # Create a stacked bar chart using plotly
+            fig = go.Figure()
+            fig.add_trace(go.Bar(x=quantities, y=df['Buying Price'], name='Buying Price'))
+            fig.add_trace(go.Bar(x=quantities, y=df['Selling Price'], name='Selling Price', 
+                                 marker_color='lightgreen'))
 
+            fig.update_layout(barmode='stack', title='Gold Prices for Different Quantities')
         else:
-            plt.figure(figsize=(8, 6))
-            plt.pie(df['Buying Price'], labels=quantities, autopct='%1.1f%%', startangle=140)
-            plt.title('Pie Chart')
+            # Create a pie chart using plotly
+            fig = go.Figure(data=[go.Pie(labels=quantities, values=df['Buying Price'],
+                                         textinfo='label+percent', marker_colors=['gold', 'silver', 'darkgoldenrod'])])
+            fig.update_layout(title='Percentage of Buying Price for Each Quantity')
 
-        # Save the Matplotlib plot to a BytesIO object and encode it to base64
-        buffer = BytesIO()
-        plt.savefig(buffer, format="png")
-        buffer.seek(0)
-        image_base64 = base64.b64encode(buffer.read()).decode()
-
-        # Return the chart as an image
-        return html.Img(src='data:image/png;base64,{}'.format(image_base64), style={'width': '80%', 'height': '80%'})
+        return fig
 
     if __name__ == '__main__':
         app.run_server(debug=True)
