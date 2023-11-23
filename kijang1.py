@@ -2,32 +2,48 @@ import requests
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+from datetime import datetime
 
 sns.set()
 
-data_2023 = []
+data_2020 = []
 for i in range(12):
-    data_2023.append(requests.get(
-        'https://api.bnm.gov.my/public/kijang-emas/year/2023/month/%d' % (i + 1),
+    response = requests.get(
+        f'https://api.bnm.gov.my/public/kijang-emas/year/2020/month/{i + 1}',
         headers={'Accept': 'application/vnd.BNM.API.v1+json'},
-    ).json())
+    )
+    if response.status_code == 200:
+        data_2020.append(response.json())
+    else:
+        print(f"Failed to fetch data for 2020, month {i + 1}")
 
-# Extracting data for plotting
+data_2021 = []
+for i in range(12):
+    response = requests.get(
+        f'https://api.bnm.gov.my/public/kijang-emas/year/2021/month/{i + 1}',
+        headers={'Accept': 'application/vnd.BNM.API.v1+json'},
+    )
+    if response.status_code == 200:
+        data_2021.append(response.json())
+    else:
+        print(f"Failed to fetch data for 2021, month {i + 1}")
+
 timestamp, selling = [], []
-for year_data in [data_2023]:
+for year_data in [data_2020, data_2021]:
     for month in year_data:
-        for day in month['data']:
-            timestamp.append(day['effective_date'])
+        for day in month.get('data', []):
+            effective_date = datetime.strptime(day['effective_date'], '%Y-%m-%d')
+            timestamp.append(effective_date.strftime('%b %Y'))
             selling.append(day['one_oz']['selling'])
 
-# Plotting
-plt.figure(figsize=(15, 5))
-plt.plot(selling)
-plt.xticks(np.arange(len(timestamp))[::15], timestamp[::15], rotation=45)
-plt.title('Kijang Emas Selling Prices Over Time (2023)')
-plt.xlabel('Date')
-plt.ylabel('Selling Price')
-plt.show()
+# Convert timestamp to numerical values for a smoother line
+x_values = np.arange(len(timestamp))
 
-# Check the length of the timestamp and selling lists
-len(timestamp), len(selling)
+# Get the indices of the first occurrence of each month
+unique_month_indices = [i for i, month in enumerate(timestamp) if i == 0 or month != timestamp[i - 1]]
+
+plt.figure(figsize=(15, 5))
+plt.plot(x_values, selling, linestyle='-', color='b')
+plt.xticks(unique_month_indices, [timestamp[i] for i in unique_month_indices], rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
