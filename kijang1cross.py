@@ -66,7 +66,7 @@ def df_shift(df, lag=0, start=1, skip=1, rejected_columns=[]):
     return df
 
 df_crosscorrelated = df_shift(
-    df, lag=12, start=4, skip=2, rejected_columns=['timestamp']
+    df, lag=12, start=4, skip=4, rejected_columns=['timestamp']
 )
 df_crosscorrelated['ma7'] = df_crosscorrelated['selling'].rolling(7).mean()
 df_crosscorrelated['ma14'] = df_crosscorrelated['selling'].rolling(14).mean()
